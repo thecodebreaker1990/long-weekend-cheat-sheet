@@ -1,13 +1,20 @@
 // components/MonthGrid.tsx
 import React, { useMemo } from "react";
 import { getMonthGrid, MONTH_NAMES, WEEKDAY_SHORT } from "@/lib/calendar";
+import type { Holiday } from "@/lib/types";
+import DayCell from "./DayCell";
 
 type Props = {
   year: number;
   monthIndex: number;
+  enabledHolidayMap: Map<string, Holiday>;
 };
 
-export default function MonthGrid({ year, monthIndex }: Props) {
+export default function MonthGrid({
+  year,
+  monthIndex,
+  enabledHolidayMap
+}: Props) {
   const days = useMemo(
     () => getMonthGrid(year, monthIndex),
     [year, monthIndex]
@@ -35,25 +42,16 @@ export default function MonthGrid({ year, monthIndex }: Props) {
         role="grid"
         aria-label={`${MONTH_NAMES[monthIndex]} ${year}`}
       >
-        {days.map((d) => {
-          const base =
-            "flex min-h-9 items-center justify-center rounded-lg border text-xs transition-colors";
-          const muted = !d.isCurrentMonth ? "opacity-30" : "opacity-100";
-
-          const weekend = d.isWeekend
-            ? "bg-yellow-400/15 border-yellow-300/20 text-yellow-100"
-            : "bg-white/[0.02] border-white/10 text-white/90 hover:bg-white/[0.05]";
-
-          return (
-            <div
-              key={d.iso}
-              aria-label={d.iso}
-              className={`${base} ${weekend} ${muted}`}
-            >
-              {d.day}
-            </div>
-          );
-        })}
+        {days.map((d) => (
+          <DayCell
+            key={d.iso}
+            isoDateKey={d.iso}
+            dayNumber={d.day}
+            isCurrentMonth={d.isCurrentMonth}
+            isWeekend={d.isWeekend}
+            holidayName={enabledHolidayMap.get(d.iso)?.name ?? ""}
+          />
+        ))}
       </div>
     </section>
   );

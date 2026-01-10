@@ -1,4 +1,5 @@
-import type { CalendarDay } from "./types";
+import type { CalendarDay } from "@/lib/types";
+import { makeUTCDate, toISODateUTC } from "@/lib/dateFunctions";
 
 export const MONTH_NAMES = [
   "January",
@@ -16,17 +17,6 @@ export const MONTH_NAMES = [
 ];
 
 export const WEEKDAY_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-function makeUTCDate(y: number, m: number, d: number): Date {
-  return new Date(Date.UTC(y, m, d));
-}
-
-function toISODateUTC(d: Date): string {
-  const yyyy = d.getUTCFullYear();
-  const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const dd = String(d.getUTCDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
-}
 
 export function getMonthGrid(year: number, monthIndex: number): CalendarDay[] {
   // 6-week grid => 42 cells for stable layout

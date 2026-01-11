@@ -10,7 +10,34 @@ export type YearStats = {
 };
 
 /**
- * Calculate statistics for a given year
+ * Get the start date for calculations (today if within year, otherwise Jan 1 of the year)
+ */
+function getStartDate(year: number): Date {
+  const today = new Date();
+  const todayUTC = makeUTCDate(
+    today.getUTCFullYear(),
+    today.getUTCMonth(),
+    today.getUTCDate()
+  );
+  const yearStart = makeUTCDate(year, 0, 1);
+  const yearEnd = makeUTCDate(year, 11, 31);
+
+  // If today is before the year, start from Jan 1
+  if (todayUTC < yearStart) {
+    return yearStart;
+  }
+
+  // If today is within the year, start from today
+  if (todayUTC >= yearStart && todayUTC <= yearEnd) {
+    return todayUTC;
+  }
+
+  // If today is after the year, return year end (will result in 0 counts)
+  return yearEnd;
+}
+
+/**
+ * Calculate statistics for a given year from today onwards (or from Jan 1 if year hasn't started)
  */
 export function calculateYearStats(
   year: number,
@@ -21,13 +48,30 @@ export function calculateYearStats(
   const weekendDates = new Set<string>();
   const holidayDates = new Set<string>();
 
-  // Iterate through all days in the year (365 or 366 days)
-  // Start from January 1 and go through December 31
-  for (let month = 0; month < 12; month++) {
-    // Get the last day of the month
-    const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  // Get the start date (today if within year, otherwise Jan 1)
+  const startDate = getStartDate(year);
+  const yearEnd = makeUTCDate(year, 11, 31);
 
-    for (let day = 1; day <= lastDay; day++) {
+  // If start date is after year end, return zeros
+  if (startDate > yearEnd) {
+    return {
+      totalWeekends: 0,
+      totalHolidays: 0,
+      totalOffDays: 0,
+      paidLeavesAvailable
+    };
+  }
+
+  const startMonth = startDate.getUTCMonth();
+  const startDay = startDate.getUTCDate();
+
+  // Iterate from start date through December 31
+  for (let month = startMonth; month < 12; month++) {
+    // Get the last day of the month
+    const lastDay = makeUTCDate(year, month + 1, 0).getUTCDate();
+    const firstDay = month === startMonth ? startDay : 1;
+
+    for (let day = firstDay; day <= lastDay; day++) {
       const current = makeUTCDate(year, month, day);
       const isoDate = toISODateUTC(current);
       const weekday = current.getUTCDay();
@@ -39,9 +83,14 @@ export function calculateYearStats(
     }
   }
 
-  // Add enabled holidays
+  // Add enabled holidays that are on or after the start date
+  const startDateISO = toISODateUTC(startDate);
   for (const holiday of enabledHolidays) {
-    if (holiday.enabled && holiday.date.startsWith(`${year}-`)) {
+    if (
+      holiday.enabled &&
+      holiday.date.startsWith(`${year}-`) &&
+      holiday.date >= startDateISO
+    ) {
       holidayDates.add(holiday.date);
     }
   }

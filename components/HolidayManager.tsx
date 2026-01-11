@@ -3,7 +3,7 @@
 
 import React, { useMemo, useState } from "react";
 import type { Holiday } from "@/lib/types";
-import { validateAndNormalizeHoliday } from "@/lib/holidayValidation";
+import { validateHoliday } from "@/lib/inputValidation";
 
 type Props = {
   year: number;
@@ -50,7 +50,7 @@ export default function HolidayManager({
   );
 
   const onAdd = () => {
-    const result = validateAndNormalizeHoliday(year, { date, name });
+    const result = validateHoliday(year, { date, name });
     if (!result.ok) {
       setError(result.error);
       return;
@@ -62,7 +62,7 @@ export default function HolidayManager({
   const onEdit = () => {
     if (!holidayID) return;
 
-    const result = validateAndNormalizeHoliday(year, { date, name });
+    const result = validateHoliday(year, { date, name });
     if (!result.ok) {
       setError(result.error);
       return;

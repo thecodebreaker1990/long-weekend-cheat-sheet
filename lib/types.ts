@@ -13,3 +13,23 @@ export type Holiday = {
   name: string;
   enabled: boolean;
 };
+
+export type HolidayInput = {
+  date?: string;
+  name?: string;
+  enabled?: boolean;
+};
+
+export type NormalizedHoliday = {
+  date: string;
+  name: string;
+  enabled: boolean;
+};
+
+export type PaidLeavesInput = {
+  value?: string | number;
+};
+
+export type Ok<T> = { ok: true; value: T };
+export type Err = { ok: false; error: string };
+export type Result<T> = Ok<T> | Err;

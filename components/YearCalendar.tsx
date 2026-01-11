@@ -1,13 +1,18 @@
 // components/YearCalendar.tsx
 "use client";
+import { useMemo } from "react";
 import MonthGrid from "./MonthGrid";
 import { useHolidays } from "@/hooks/useHolidays";
+import { usePaidLeaves } from "@/hooks/usePaidLeaves";
 import HolidayManager from "@/components/HolidayManager";
+import PaidLeavesInput from "@/components/PaidLeavesInput";
+import StatsBar from "@/components/StatsBar";
+import { calculateYearStats } from "@/lib/stats";
 
 export default function YearCalendar() {
   const year = 2026;
   const {
-    hydrated,
+    hydrated: holidaysHydrated,
     holidays,
     enabledHolidayMap,
     addHoliday,
@@ -16,6 +21,27 @@ export default function YearCalendar() {
     deleteHoliday,
     resetDefaults
   } = useHolidays(year);
+
+  const {
+    paidLeaves,
+    hydrated: paidLeavesHydrated,
+    updatePaidLeaves
+  } = usePaidLeaves(year);
+
+  // Calculate stats
+  const stats = useMemo(() => {
+    if (!holidaysHydrated) {
+      return {
+        totalWeekends: 0,
+        totalHolidays: 0,
+        totalOffDays: 0,
+        paidLeavesAvailable: 0
+      };
+    }
+    return calculateYearStats(year, holidays, paidLeaves);
+  }, [year, holidays, paidLeaves, holidaysHydrated]);
+
+  const hydrated = holidaysHydrated && paidLeavesHydrated;
 
   return (
     <main className="min-h-screen bg-black text-white">
@@ -27,10 +53,27 @@ export default function YearCalendar() {
           <p className="mt-1 text-sm text-white/60">
             {year} calendar • Weekends highlighted
           </p>
+
+          {/* Paid Leaves Input */}
+          <div className="mt-4 mb-4">
+            <PaidLeavesInput
+              value={paidLeaves}
+              onChange={updatePaidLeaves}
+              hydrated={paidLeavesHydrated}
+            />
+          </div>
+
+          {/* Stats Bar */}
+          {hydrated && (
+            <div className="mb-4">
+              <StatsBar stats={stats} />
+            </div>
+          )}
+
           {/* Holiday Manager (panel/modal) */}
           <HolidayManager
             year={year}
-            hydrated={hydrated}
+            hydrated={holidaysHydrated}
             holidays={holidays}
             addHoliday={addHoliday}
             updateHoliday={updateHoliday}

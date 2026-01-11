@@ -1,22 +1,12 @@
 import { isValidISODateKey } from "@/lib/dateFunctions";
+import {
+  HolidayInput,
+  NormalizedHoliday,
+  PaidLeavesInput,
+  Result
+} from "@/lib/types";
 
-type Ok<T> = { ok: true; value: T };
-type Err = { ok: false; error: string };
-type Result<T> = Ok<T> | Err;
-
-export type HolidayInput = {
-  date?: string;
-  name?: string;
-  enabled?: boolean;
-};
-
-export type NormalizedHoliday = {
-  date: string;
-  name: string;
-  enabled: boolean;
-};
-
-export function validateAndNormalizeHoliday(
+export function validateHoliday(
   year: number,
   input: HolidayInput,
   fallback?: Partial<NormalizedHoliday>
@@ -48,5 +38,42 @@ export function validateAndNormalizeHoliday(
   return {
     ok: true,
     value: { date: rawDate, name: finalName, enabled }
+  };
+}
+
+const MAX_PAID_LEAVES = 200;
+
+export function validatePaidLeaves(input: PaidLeavesInput): Result<number> {
+  const rawValue = String(input.value).trim();
+
+  // Check if input is empty
+  if (!rawValue) {
+    return { ok: false, error: "Paid leaves cannot be empty." };
+  }
+
+  // Check if input has non-numeric characters
+  if (!/^\d+$/.test(rawValue)) {
+    return { ok: false, error: "Paid leaves must be a number." };
+  }
+
+  // Parse to number
+  const numValue = parseInt(rawValue, 10);
+
+  // Check if negative
+  if (numValue < 0) {
+    return { ok: false, error: "Paid leaves cannot be negative." };
+  }
+
+  // Check if too large
+  if (numValue > MAX_PAID_LEAVES) {
+    return {
+      ok: false,
+      error: `Paid leaves cannot exceed ${MAX_PAID_LEAVES} days.`
+    };
+  }
+
+  return {
+    ok: true,
+    value: numValue
   };
 }

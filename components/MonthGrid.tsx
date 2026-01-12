@@ -2,6 +2,7 @@
 import React, { useMemo } from "react";
 import { getMonthGrid, MONTH_NAMES, WEEKDAY_SHORT } from "@/lib/calendar";
 import type { Holiday } from "@/lib/types";
+import type { LongWeekend } from "@/lib/longWeekendDetection";
 import { toISODateKeyUTC } from "@/lib/dateFunctions";
 import DayCell from "./DayCell";
 
@@ -9,12 +10,16 @@ type Props = {
   year: number;
   monthIndex: number;
   enabledHolidayMap: Map<string, Holiday>;
+  longWeekendMap: Map<string, LongWeekend>;
+  paidLeaveMap: Map<string, { block: unknown; description: string }>;
 };
 
 export default function MonthGrid({
   year,
   monthIndex,
-  enabledHolidayMap
+  enabledHolidayMap,
+  longWeekendMap,
+  paidLeaveMap
 }: Props) {
   const days = useMemo(
     () => getMonthGrid(year, monthIndex),
@@ -46,17 +51,23 @@ export default function MonthGrid({
         role="grid"
         aria-label={`${MONTH_NAMES[monthIndex]} ${year}`}
       >
-        {days.map((d) => (
-          <DayCell
-            key={d.iso}
-            isoDateKey={d.iso}
-            dayNumber={d.day}
-            isCurrentMonth={d.isCurrentMonth}
-            isWeekend={d.isWeekend}
-            holidayName={enabledHolidayMap.get(d.iso)?.name ?? ""}
-            isToday={d.iso === todayKey}
-          />
-        ))}
+        {days.map((d) => {
+          const longWeekend = longWeekendMap.get(d.iso);
+          const paidLeave = paidLeaveMap.get(d.iso);
+          return (
+            <DayCell
+              key={d.iso}
+              isoDateKey={d.iso}
+              dayNumber={d.day}
+              isCurrentMonth={d.isCurrentMonth}
+              isWeekend={d.isWeekend}
+              holidayName={enabledHolidayMap.get(d.iso)?.name ?? ""}
+              isToday={d.iso === todayKey}
+              longWeekendDescription={longWeekend?.description ?? ""}
+              paidLeaveDescription={paidLeave?.description ?? ""}
+            />
+          );
+        })}
       </div>
     </section>
   );

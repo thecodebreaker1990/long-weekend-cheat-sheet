@@ -3,7 +3,7 @@ import React, { useMemo } from "react";
 import { getMonthGrid, MONTH_NAMES, WEEKDAY_SHORT } from "@/lib/calendar";
 import type { Holiday } from "@/lib/types";
 import type { LongWeekend } from "@/lib/longWeekendDetection";
-import { toISODateKeyUTC } from "@/lib/dateFunctions";
+import { toISODateUTC } from "@/lib/dateFunctions";
 import DayCell from "./DayCell";
 
 type Props = {
@@ -27,7 +27,7 @@ export default function MonthGrid({
   );
 
   // Compute today's date key once (using UTC to match calendar logic)
-  const todayKey = useMemo(() => toISODateKeyUTC(new Date()), []);
+  const todayKey = useMemo(() => toISODateUTC(new Date()), []);
 
   return (
     <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-3 shadow-sm">

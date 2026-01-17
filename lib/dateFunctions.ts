@@ -1,14 +1,4 @@
 // lib/date-functions.ts
-/**
- * Convert a Date to a stable YYYY-MM-DD key in UTC (prevents timezone day shift).
- */
-export function toISODateKeyUTC(d: Date): string {
-  const yyyy = d.getUTCFullYear();
-  const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const dd = String(d.getUTCDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
-}
-
 export function isValidISODateKey(dateKey: string): boolean {
   // Basic validation for YYYY-MM-DD
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) return false;
@@ -30,6 +20,9 @@ export function makeUTCDate(y: number, m: number, d: number): Date {
   return new Date(Date.UTC(y, m, d));
 }
 
+/**
+ * Convert a Date to a stable YYYY-MM-DD key in UTC (prevents timezone day shift).
+ */
 export function toISODateUTC(d: Date): string {
   const yyyy = d.getUTCFullYear();
   const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
